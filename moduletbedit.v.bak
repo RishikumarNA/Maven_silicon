@@ -1,0 +1,50 @@
+module tb();
+reg Hclk,Hresetn;
+
+
+wire [1:0]Hresp =0 ;
+wire [31:0] Hwdata,Haddr,Prdata,Paddr,Pwdata,Paddrout,Pwdataout;
+wire [31:0] Hrdata=Prdata;
+wire Hwrite,Hreadyin;
+wire [1:0] Htrans;
+wire Penable,Pwrite,Hreadyout,Pwriteout,Penableout;
+wire [2:0] Pselx,Pselxout;
+
+
+
+
+AHB_Master1 ahb_master(Hclk,Hresetn,Hresp,Hrdata,Hwrite,Hreadyin,Hreadyout,Htrans,Hwdata,Haddr);
+
+Bridge_Top bridge_top(Hclk,Hresetn,Hwrite,Hreadyin,Hreadyout,Hwdata,Haddr,Htrans,Prdata,Penable,Pwrite,Pselx,Paddr,Pwdata);
+
+APB_Interface apb(Pwrite,Pselx,Penable,Paddr,Pwdata,Pwriteout,Pselxout,Penableout,Paddrout,Pwdataout,Prdata);
+
+
+initial 
+begin
+Hclk=1'b0;
+forever #10 Hclk=~Hclk;
+end
+
+task reset();
+begin
+@(negedge Hclk);
+Hresetn = 0;
+@(negedge Hclk);
+Hresetn = 1;
+end
+endtask
+
+initial
+begin
+reset;
+//ahb_master.single_write();
+//ahb_master.single_read();
+//ahb_master.burst_inc_write();
+//ahb_master.burst_wrap_write();
+ahb_master.burst_inc_read();
+//ahb_master.burst_wrap_read();
+
+#1000 $finish;
+end
+endmodule
